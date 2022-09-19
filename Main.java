@@ -1,9 +1,11 @@
 public class Main {
     public static void main(String[] args){
-        Loader loader = new Loader();
-        Process process = loader.load("process1");
-        Scheduler scheduler = new Scheduler();
-        scheduler.exectue(process);
+        CPU cpu = new CPU();
+        cpu.setSwitch(true);
+
+        Process process = new Process(); // 원래 Process를 불러오는 과정이 필요한데 일단 PRocess를 처리하도록 해보자.
+        cpu.loadProcess(process);
+        cpu.run();
     }
 
 
