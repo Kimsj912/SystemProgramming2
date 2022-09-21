@@ -14,7 +14,7 @@ public class Process {
         this.instructions.add(new L4());
         this.instructions.add(new L5());
     }
-    public void execute (int lineNum){
+    public void execute (){
         instructions.get(PC).execute();
         PC++;
     }

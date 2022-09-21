@@ -1,58 +1,29 @@
 // CPU는 명령을 주면 처리하는 수동적인 부분이다.
 public class CPU {
-    // Variables
-    public enum EInterrupt{
-        eNone,
-        eTimeout,
-        eIOStarted,
-        eIOCompleted,
+
+    //
+    private class Context { // Context는 그저 register 집합이라고 보면 됨.
+        private int PC;
+        public int getPC(){return PC;}
+        public void setPC(int PC){ this.PC = PC;}
+
     }
 
-    public boolean switchOn;
     private Process process;
-    private EInterrupt interrupt;
+    private Context context;
+    public void setContext(Process process){
+        this.process = process;
+        this.process = this.process.getContext();
+    }
+    public Process getContext(){return this.process;}
 
     // Constructor
-    public CPU(){
-        this.interrupt = EInterrupt.eNone;
+    public CPU(){this.context = new Context();
     }
 
-    public void setSwitch(boolean switchOn){
-        this.switchOn = switchOn;
-    }
-
-    public  void run(){
-        while(switchOn){
-            // CPU가 돌아가는 코드.
-            process.execute();
-            this.processInterrupt();
-
-
-        }
-    }
-
-    /** process를 불러오는 함수 */
-    void loadProcess(Process process){
-        this.process = process;
-    }
-
-    /** interrupt를 처리하는 함수. */
-    private void processInterrupt(){
-        switch (interrupt){
-            case eTimeout:
-                // timeout
-                break;
-            case eIOCompleted:
-                // io completed
-                break;
-            case eIOStarted:
-                // io interrupt
-                break;
-            case eNone:
-                // interrupt가 없다.:
-                break;
-            default:
-                break;
-        }
+    public  void executeInstruction(){ // 한라인을 실행하는 것. (register들의 상태를 CPU가 갖고있다가 저장하고 복구할 땐 다시 가져옴)
+        // 현재라인을 실행해보면 다음pc가 어디인지 알 수 있다.
+        int nextPC = this.process.run(this.context.getPC());
+        this.getContext().setPC(nextPC);
     }
 }
