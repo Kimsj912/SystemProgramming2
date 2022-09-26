@@ -1,63 +1,63 @@
 import java.util.Vector;
 
 public class Process {
-    private class ProcessControlBlock {
-        private int pid; // 프로세스 id
 
-        // Account
-        private int oid; // owner Id
 
-        // Statistics
-        // io Status Information (IO가 끝났는지 아닌지, 어떤 IO가 끝났는지, 어떤 IO가 시작되었는지 등)
-        private int ioDeviceId;
-        private int ioDeviceStatus;
-        public enum Estatus{
-            eReady,
-            eRunning,
-            eWaiting,
-            eSuspended, // 일시중단됨.
+    // Attributes
+    private ProcessContext context;
+    private final CodeSegment codeSegment;
+    private final DataSegment dataSegment;
+    private final StackSegment stackSegment;
+    private final HeapSegment heapSegment;
+
+    // Getter & Setter
+    public ProcessContext getContext(){return context;}
+    public void setContext(ProcessContext context){this.context = context;}
+
+    // Constructor
+    public Process(String name, int pid, int oid, String codes) {
+
+        this.context = new ProcessContext(name, pid, oid);
+        // TODO: initialize (stack, heap, data) segments
+        this.codeSegment = new CodeSegment(codes);
+        this.dataSegment = new DataSegment(); // Empty Stack
+        this.stackSegment = new StackSegment(); // Empty Stack
+        this.heapSegment = new HeapSegment(); // Empty Heap
+    }
+
+    // Methods
+    public Instruction getInstruction(){
+        return this.codeSegment.getInstruction();
+    }
+
+
+    // Inner Classes
+    private static class CodeSegment {
+        private final Vector<Instruction> instructions;
+        private int size;
+        private int base;
+
+        public CodeSegment(String codes){
+            this.instructions = new Vector<Instruction>();
+            this.size = 0;
+            this.base = 0;
+
+            String[] codeLines = codes.split("\n");
+
+            for (String codeLine : codeLines) {
+                String[] code = codeLine.split(" ");
+                Instruction instruction = new Instruction(code[0], code[1]);
+                this.instructions.add(instruction);
+                this.size++;
+            }
         }
-        private Estatus status;
 
-        private class CPUContext { // TODO: CPU와 Process가 공유해서 쓸 거임.
-            // Segment Table (about segment registers)
-            private int cs;
-            private int ds;
-            private int ss;
-            private int hs;
-
-            // cu
-            private int PC;
-
-            // alu
-            private int AC;
-
-            // memory interface
-            private int MAR;
-            private int MBR;
-        }
-        private CPUContext cpuContext;
-
-
-
-    }
-    private int PC;
-
-    private Vector<Instruction> instructions;
-    public int getLineLength(){return this.instructions.size();}
-
-    public Process(){
-        this.instructions = new Vector<Instruction>();
-    }
-
-    public void execute (){
-        instructions.get(PC).execute("");
-        PC++;
-    }
-
-    private class Instruction {
-        public void execute(String instruction){
-            System.out.println("Instruction: " + instruction);
+        public Instruction getInstruction(){
+            if(this.base < this.size) return this.instructions.get(this.base++);
+            else return null;
         }
     }
+    private class StackSegment{ }
+    private class HeapSegment{ }
+    private class DataSegment { }
 }
