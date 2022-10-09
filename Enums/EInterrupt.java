@@ -17,5 +17,5 @@ public enum EInterrupt {
 //    // 10: Other
 //    TIMER, KEYBOARD, DISK, NETWORK, PRINTER, MOUSE, MONITOR, POWER, SYSTEM_CALL, EXCEPTION, OTHER;
 
-    eNone, eRunning, eTimeOut, eIOStarted, eIOTerminated, eProcessStarted, eProcessTerminated;
+    eIdle, eRunning, eTimeOut, eIOStarted, eIOTerminated, eProcessStarted, eProcessTerminated;
 }

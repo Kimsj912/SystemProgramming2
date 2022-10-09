@@ -2,6 +2,7 @@ import Enums.EInterrupt;
 import Enums.EProcessStatus;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class OS {
     private final Storage storage;
@@ -30,20 +31,21 @@ public class OS {
             Process process = this.memory.load(program);
             readyQueue.add(process);
         }
-        interruptHandler.addInterrupt(new Interrupt(EInterrupt.eNone, null));
+        interruptHandler.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, readyQueue.poll()));
     }
 
     Interrupt interrupt;
     public void checkInterrupt(){
         Process oldProcess, newProcess;
         this.interrupt = this.interruptHandler.getInterrupt(); // TODO: !!!!!!!!!!!!!!!!여기부터 수정해야함. 초기에 프로젝트 셋팅하고 루핑도는 과정이 뻑이 좀 있음. interruptHandler.getInterrupt()의 위치 변화가 요구됨.
-        if(interrupt == null) return;
-        switch(interrupt.getType()){
-            case eNone: // 초기화상태
-                if(! readyQueue.isEmpty()) interruptHandler.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, this.readyQueue.poll()));
+        if(this.interrupt == null || this.interrupt.getType() == null) return;
+        switch(this.interrupt.getType()){
+            case eIdle: // 더이상 읽을게 없는 상태
                 break;
-            case eRunning: break;
-            case eTimeOut:
+            case eRunning:
+               break;
+            case eTimeOut: // TimeOut
+                System.out.println("...time out");
                 // Context Switching (with readyQueue)
                 // Process old Process
                 oldProcess = interrupt.getProcess();
@@ -53,16 +55,25 @@ public class OS {
 
                 // Process new Process
                 newProcess = readyQueue.poll();
-                if(newProcess == null) return;
-                this.currentProcess = newProcess;
-                cpu.setContext(this.currentProcess.getContext());
-                cpu.getContext().setStatus(EProcessStatus.RUNNING);
+                if(newProcess == null) {
+                    this.currentProcess= null;
+                    return;
+                }
+                this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, newProcess));
                 System.out.println("Context Switched by Interrupted: " + oldProcess.getContext().getName()+ " -> "+ newProcess.getContext().getName());
                 break;
             case eProcessStarted:
                 this.currentProcess = interrupt.getProcess();
                 cpu.setContext(this.currentProcess.getContext());
-                System.out.println("Process " + this.currentProcess.getContext().getName() + " is started");
+                cpu.getContext().setStatus(EProcessStatus.RUNNING);
+                new Timer().schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        interruptHandler.addInterrupt(new Interrupt(EInterrupt.eTimeOut, currentProcess));
+                    }
+                }, 2010);
+                this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eRunning, this.currentProcess));
+                System.out.println("Process Started: " + this.currentProcess.getContext().getName());
                 break;
             case eProcessTerminated:
                 // Process old Process
@@ -73,12 +84,11 @@ public class OS {
 
                 // Process new Process
                 newProcess = readyQueue.poll();
-                try{
-                    assert newProcess != null;
-                } catch (AssertionError e) {
+                if(newProcess == null){
                     System.out.println("All Process Terminated");
-                    // TODO: 지금은 종료하지만, 나중엔 루핑 계속 돌도록 해야함.
-                    System.exit(0);
+                    this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eIdle,null));
+                    currentProcess = null;
+                    return;
                 }
                 cpu.setContext(newProcess.getContext());
                 this.currentProcess = newProcess;
@@ -98,21 +108,16 @@ public class OS {
     public void run(){
         while(true) {
             // TODO: UI로 파일 추가된게 있는지 체크하는 로직 추가하여 Process 추가로직 구성
-            new Timer().schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    new Timer().schedule(new TimerTask() {
-                        @Override
-                        public void run(){
-                            Instruction nextInstruction = currentProcess.getInstruction();
-                            if(nextInstruction == null) interruptHandler.addInterrupt(new Interrupt(EInterrupt.eProcessTerminated, currentProcess));
-                            else cpu.executeInstruction(nextInstruction);
-                        }
-                    }, 2900);
-                    checkInterrupt();
-                }
-            }, 3000);
-            interruptHandler.addInterrupt(new Interrupt(EInterrupt.eTimeOut, currentProcess));
+            try {
+                checkInterrupt();
+                if(currentProcess == null) return;
+                Instruction nextInstruction = currentProcess.getInstruction();
+                if(nextInstruction == null) interruptHandler.addInterrupt(new Interrupt(EInterrupt.eProcessTerminated, currentProcess));
+                else cpu.executeInstruction(nextInstruction);
+                TimeUnit.MILLISECONDS.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
