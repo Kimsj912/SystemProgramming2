@@ -1,7 +1,21 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+
 public class Loader {
-    // HDD exe를 읽어서 exe파일의 메모리 주소를 Scheduler에게 주는 역할을 수행.
-    public Process load(String processName){
-        Process process = new Process();
-        return process;
+    public void load(String exeName){
+        try {
+            File file = new File("Data"+"/"+exeName);
+            Scanner sc = new Scanner(file);
+            Process process = new Process(); // process가 직접 내용을 읽도록 하여 modularity를 높임.
+            process.load(sc);
+            sc.close();
+
+            Scheduler scheduler = new Scheduler();
+            scheduler.getReadyQueue().enqueue(process);
+
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
