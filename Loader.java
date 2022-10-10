@@ -3,7 +3,7 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 public class Loader {
-    public void load(String exeName){
+    public Process load(String exeName){
         try {
             File file = new File("Data"+"/"+exeName);
             Scanner sc = new Scanner(file);
@@ -12,7 +12,7 @@ public class Loader {
             sc.close();
 
             Scheduler scheduler = new Scheduler();
-            scheduler.getReadyQueue().enqueue(process);
+            return process;
 
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);

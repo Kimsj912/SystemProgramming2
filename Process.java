@@ -25,7 +25,9 @@ public class Process {
 //            .end
 
 
+
     // Variables
+    private int PC;
     private int stackSize;
     private int codeSize;
     private int heapSize;
@@ -34,6 +36,9 @@ public class Process {
 
 
     // Getter & Setter
+
+    public int getPC(){return PC;}
+    public void setPC(int PC){this.PC = PC;}
     public int getStackSize(){return stackSize;}
     public void setStackSize(int stackSize){this.stackSize = stackSize;}
     public int getCodeSize(){return codeSize;}
@@ -101,5 +106,10 @@ public class Process {
                 this.stackSize = Integer.parseInt(tokens[1]);
             }
         }
+    }
+
+    public void executeInstruction(){
+        String instruction = this.codeList.get(this.getPC());
+        this.setPC(this.getPC()+1);
     }
 }

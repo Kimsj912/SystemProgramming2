@@ -13,7 +13,6 @@ public class CPU {
     private Context context;
     public void setContext(Process process){
         this.process = process;
-        this.process = this.process.getContext();
     }
     public Process getContext(){return this.process;}
 
@@ -23,7 +22,7 @@ public class CPU {
 
     public  void executeInstruction(){ // 한라인을 실행하는 것. (register들의 상태를 CPU가 갖고있다가 저장하고 복구할 땐 다시 가져옴)
         // 현재라인을 실행해보면 다음pc가 어디인지 알 수 있다.
-        int nextPC = this.process.run(this.context.getPC());
-        this.getContext().setPC(nextPC);
+//        int nextPC = this.process.run(this.context.getPC());
+//        this.getContext().setPC(nextPC);
     }
 }
