@@ -1,4 +1,4 @@
-public class Scheduler {
+public class Scheduler extends Thread{
     // Variables
     private boolean bPowerOn;
 
@@ -25,18 +25,26 @@ public class Scheduler {
         this.runningProcess = null; // TODO: eTimeout으로 셋팅해야한대.
     }
 
+    public synchronized void enReadyQueue(Process process){ // synchronized : Critical Section (한 스레드만 들어갈 수 있다)
+        // critical Section 시작
+        this.getReadyQueue().enqueue(process);
+    }
 
+    public synchronized Process deReadyQueue(){
+        return this.getReadyQueue().dequeue();
+    }
 
     public void run(){
 
         while(this.bPowerOn){
-            // Check Interrupt
-            this.interruptHandler.handle();
             // running
-            if(this.runningProcess == null) continue;
-            // Execute Process
-//            this.cpu.executeInstruction(this.runningProcess);
-            this.runningProcess.executeInstruction();
+            if(this.runningProcess != null) {
+                // Execute Process
+//              this.cpu.executeInstruction(this.runningProcess);
+                this.runningProcess.executeInstruction();
+            };
+            // Check Interrupt
+//            this.interruptHandler.handle();
         }
     }
 
