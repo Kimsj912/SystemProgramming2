@@ -62,16 +62,17 @@ public class Process {
 
 
     public void parseCode(Scanner sc){
-        String line;
-//        while(sc.hasNextLine()){
-            while(sc.hasNext() && (line = sc.nextLine()).compareTo(".end") != 0){
-                parse(sc);
-            }
-//        }
+        String line = sc.nextLine();
+        while(line.compareTo("halt") != 0){
+//            parse(sc);
+            this.codeList.add(line);
+            line = sc.nextLine();
+            System.out.println(line);
+        }
 
     }
 
-    private void parse(Scanner scanner){
+    public void parse(Scanner scanner){
         while (scanner.hasNext()){
             String token = scanner.next();
             if(token.compareTo(".program") == 0){
@@ -80,46 +81,51 @@ public class Process {
             } else if(token.compareTo(".data") == 0){
                 this.parseData(scanner);
             } else if(token.compareTo(".end") == 0){
+                System.out.println(codeSize+" "+dataSize+" "+stackSize+" "+heapSize);
             }
         }
     }
-    private void loadCodeSegment(Scanner sc){
-        String token;
-        while((token = sc.nextLine()).compareTo(".code") != 0) {
-            String[] tokens = token.split(" ");
-            if (tokens[0].compareTo("codeSize") == 0) {
-                this.codeSize = Integer.parseInt(tokens[1]);
-            } else if (tokens[0].compareTo(".dataSize") == 0) {
-                this.dataSize = Integer.parseInt(tokens[1]);
-            } else if (tokens[0].compareTo(".heapSize") == 0) {
-                this.heapSize = Integer.parseInt(tokens[1]);
-            } else if (tokens[0].compareTo(".stackSize") == 0) {
-                this.stackSize = Integer.parseInt(tokens[1]);
-            }
-        }
-
-    }
+//    private void loadCodeSegment(Scanner sc){
+//        String token;
+//        while((token = sc.nextLine()).compareTo(".code") != 0) {
+//            String[] tokens = token.split(" ");
+//            if (tokens[0].compareTo("codeSize") == 0) {
+//                this.codeSize = Integer.parseInt(tokens[1]);
+//            } else if (tokens[0].compareTo(".dataSize") == 0) {
+//                this.dataSize = Integer.parseInt(tokens[1]);
+//            } else if (tokens[0].compareTo(".heapSize") == 0) {
+//                this.heapSize = Integer.parseInt(tokens[1]);
+//            } else if (tokens[0].compareTo(".stackSize") == 0) {
+//                this.stackSize = Integer.parseInt(tokens[1]);
+//            }
+//        }
+//
+//    }
 
     private void parseData(Scanner sc){ // 실제론 PCB에 들어가야하는 함수임.
         String command;
         while((command = sc.next()).compareTo(".end") != 0){
             String operand = sc.next();
             int size = Integer.parseInt(operand);
-            if(operand.compareTo("codeSize") == 0){
+            if(command.compareTo("codeSize") == 0){
                 this.codeSize = size;
-            } else if(operand.compareTo(".dataSize") == 0){
+            } else if(command.compareTo("dataSize") == 0){
                 this.dataSize = size;
-            } else if(operand.compareTo(".heapSize") == 0){
+            } else if(command.compareTo("heapSize") == 0){
                 this.heapSize = size;
-            } else if(operand.compareTo(".stackSize") == 0){
+            } else if(command.compareTo("stackSize") == 0){
                 this.stackSize = size;
             }
         }
     }
 
-    public void executeInstruction(){
+    public boolean executeInstruction(){
         String instruction = this.codeList.get(this.getPC());
         System.out.println(instruction);
         this.setPC(this.getPC()+1);
+        if(instruction.compareTo("halt")!=0){
+            return false;
+        }
+        return true;
     }
 }

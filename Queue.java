@@ -1,9 +1,9 @@
 import java.util.Vector;
 
-public class ProcessQueue extends Vector<Process> {
+public class Queue<T> extends Vector<T> {
     private static final int MAX_NUM_PROCESS = 10;
     private int head, tail, maxSize, currentSize;
-    public ProcessQueue(){
+    public Queue(){
         this.maxSize = MAX_NUM_PROCESS;
         this.currentSize = 0;
         this.head = 0;
@@ -15,22 +15,22 @@ public class ProcessQueue extends Vector<Process> {
     }
 
     // TODO: Exception handling 추가
-    public void enqueue(Process process){ // process를 넣지만 실제론 주소를 넣는다.
+    public void enqueue(T t){ // process를 넣지만 실제론 주소를 넣는다.
         if(this.currentSize < this.maxSize) {
-            this.set(this.tail, process);
+            this.set(this.tail, t);
             this.tail = (this.tail + 1) % this.maxSize;
             this.currentSize++;
         }
     }
 
-    public Process dequeue(){
-        Process process = null;
+    public T dequeue(){
+        T t = null;
         if(this.currentSize > 0) {
-            process = this.get(this.head);
+            t = this.get(this.head);
 //            this.set(this.head, null); // 없어도 될듯
             this.head = (this.head + 1) % this.maxSize;
             this.currentSize--;
         }
-        return process;
+        return t;
     }
 }
