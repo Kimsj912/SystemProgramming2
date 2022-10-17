@@ -1,8 +1,10 @@
 import java.io.IOException;
+import java.sql.Array;
+import java.util.ArrayList;
 
-public class Storage {
+public class Storage extends ArrayList<Program> {
+
     public Program[] startProgram(){
-        // TODO: File에서 읽어오도록 변경할 것.
         try{
             Program[] programs = new Program[3];
             programs[0] = new Program("process1.txt");
@@ -14,5 +16,18 @@ public class Storage {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public void addProgram(Program program){
+        this.add(program);
+    }
+
+    public Program load(String programName){
+        for(Program program : this){
+            if(program.getName().equals(programName)){
+                return program;
+            }
+        }
+        return null;
     }
 }
