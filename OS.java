@@ -1,8 +1,7 @@
 import Enums.EInterrupt;
-import Enums.EProcessStatus;
 
+import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 public class OS {
     // Association
@@ -34,24 +33,17 @@ public class OS {
         this.loader.initialize(memory, storage);
     }
 
-    public void run(){
-        // TODO: UI로 파일 추가된게 있는지 체크하는 로직 추가하여 Process 추가로직 구성
-        for (Program program : storage.startProgram()) { // 결국 storage에 있는 것드릉ㄴ 다 program이니까, 시작프로그램을 가져오더라도 Program형태로 가져와야지 string 형태로 가져오면 안됨.
+    public void run() throws IOException{
+        // OS의 시작과 함께 시작 프로그램을 실행시킨다.
+        for (Program program : storage.startPrograms()) { // 결국 storage에 있는 것드릉ㄴ 다 program이니까, 시작프로그램을 가져오더라도 Program형태로 가져와야지 string 형태로 가져오면 안됨.
             Process process = this.loader.load(program);
             scheduler.enReadyQueue(process);
         }
         interruptHandler.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, scheduler.deReadyQueue()));
+
         // Timer
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    scheduler.run();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, 0, 1000);
+        // TODO: UI로 파일 추가된게 있는지 체크하는 로직 추가하여 Process 추가로직 구성
+        scheduler.start();
     }
 
     public void executeInstruction(Process process){

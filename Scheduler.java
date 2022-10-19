@@ -7,7 +7,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-public class Scheduler {
+public class Scheduler extends Thread {
 
     private InterruptHandler interruptHandler;
     // Association
@@ -34,30 +34,31 @@ public class Scheduler {
 
     }
 
-    public void run() throws InterruptedException{
-        if(this.currentProcess == null) {
-            this.currentProcess = deReadyQueue();
-            if(this.currentProcess == null) {
-                this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eIdle, null));
-                return;
+    public void run(){
+        while(true){
+            try {
+                checkInterrupt();
+                if(this.currentProcess == null) {
+                    this.currentProcess = deReadyQueue();
+                    if(this.currentProcess == null) {
+                        this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eIdle, null));
+                        return;
+                    }
+                    this.currentProcess.getContext().setStatus(EProcessStatus.RUNNING);
+                    this.cpu.setContext(this.currentProcess.getContext());
+                } else {
+                    os.executeInstruction(this.currentProcess);
+                }
+                sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
-            this.currentProcess.getContext().setStatus(EProcessStatus.RUNNING);
-            this.cpu.setContext(this.currentProcess.getContext());
-        } else {
-            os.executeInstruction(this.currentProcess);
         }
-        checkInterrupt();
     }
 
-    public synchronized void enReadyQueue(Process process) {
-        // 프로세스를 준비 큐에 넣는다.
-        readyQueue.add(process);
-    }
-    
-    public synchronized Process deReadyQueue() {
-        // 준비 큐에서 프로세스를 꺼낸다.
-        return readyQueue.poll();
-    }
+    public synchronized void enReadyQueue(Process process) {readyQueue.add(process);}
+    public synchronized Process deReadyQueue() {return readyQueue.poll();}
+
 
     public void checkInterrupt(){
         Process oldProcess, newProcess;
@@ -65,6 +66,8 @@ public class Scheduler {
         if(interrupt == null || interrupt.getType() == null) return;
         switch(interrupt.getType()){
             case eIdle: // 더이상 읽을게 없는 상태
+                // TODO: UI로 ReadyQueue에 enqueue되는게 있는지 관찰자 패턴으로 체크하기
+                System.out.println("waiting new process...");
                 break;
             case eRunning:
                 break;
@@ -75,12 +78,13 @@ public class Scheduler {
                 oldProcess = interrupt.getProcess();
                 oldProcess.setContext(cpu.getContext());
                 oldProcess.getContext().setStatus(EProcessStatus.READY);
-                readyQueue.add(oldProcess);
+                enReadyQueue(oldProcess);
 
                 // Process new Process
-                newProcess = readyQueue.poll();
+                newProcess = deReadyQueue();
                 if(newProcess == null) {
                     this.currentProcess= null;
+                    this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eIdle, null));
                     return;
                 }
                 this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, newProcess));
@@ -107,17 +111,15 @@ public class Scheduler {
                 // TODO: 요기에 Storage까지 프로세스 종료 처리 로직 추가
 
                 // Process new Process
-                newProcess = readyQueue.poll();
+                newProcess = deReadyQueue();
                 if(newProcess == null){
-                    System.out.println("All Process Terminated");
-                    this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eIdle,null));
                     currentProcess = null;
-                    return;
+                    this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eIdle,null));
+                    System.out.println("All Process Terminated");
+                } else{
+                    this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, newProcess));
+                    System.out.println("Context Switched by Terminated: " + oldProcess.getContext().getName()+ " -> "+ newProcess.getContext().getName());
                 }
-                cpu.setContext(newProcess.getContext());
-                this.currentProcess = newProcess;
-                cpu.getContext().setStatus(EProcessStatus.RUNNING);
-                System.out.println("Context Switched by Terminated: " + oldProcess.getContext().getName()+ " -> "+ newProcess.getContext().getName());
                 break;
             // TODO: 구현 필요
             case eIOStarted:

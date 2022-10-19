@@ -1,33 +1,44 @@
-import java.io.IOException;
-import java.sql.Array;
-import java.util.ArrayList;
+import Constants.ConstantData;
 
-public class Storage extends ArrayList<Program> {
+import java.io.*;
+import java.util.HashMap;
 
-    public Program[] startProgram(){
-        try{
-            Program[] programs = new Program[3];
-            programs[0] = new Program("process1.txt");
-            programs[1] = new Program("process2.txt");
-            programs[2] = new Program("process3.txt");
-            return programs;
-        } catch (IOException e){
-            System.out.println("404 File Not Found");
-            e.printStackTrace();
-            return null;
-        }
-    }
+public class Storage extends HashMap<String, Program> {
 
-    public void addProgram(Program program){
-        this.add(program);
-    }
+    public Storage (){
+        super();
 
-    public Program load(String programName){
-        for(Program program : this){
-            if(program.getName().equals(programName)){
-                return program;
+        File directory = new File(ConstantData.directoryName.getText());
+        if(!directory.exists()){
+            if(!directory.mkdir()) {
+                System.out.println("ERROR: Failed to create directory");
             }
         }
-        return null;
+        File[] files = directory.listFiles();
+        assert files != null; // listFiles 읽어보니 null이 오진 않을 것 같음. assert만 남겨도 무리 없으리라 봄.
+        for (File file : files) {
+            try {
+                System.out.println("File: " + file.getName());
+                if(file.getName().endsWith(ConstantData.fileExtension.getText())) {
+                    Program program = new Program(file.getName());
+                    addProgram(program);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
+
+    public Program[] startPrograms() throws IOException{
+        // Read Start Program list
+        File startProgramList = new File(ConstantData.startPrograms.getText());
+        BufferedReader br = new BufferedReader(new FileReader(startProgramList));
+        String line = br.readLine();
+
+        // Make Start Program array
+        Program[] startPrograms = new Program[Integer.parseInt(line)]; // 처음에 startProgram의 개수를 알려줌.
+        for(int i = 0; (line = br.readLine()) != null; i++)startPrograms[i] = this.get(line);
+        return startPrograms;
+    }
+    public void addProgram(Program program){this.put(program.getName(), program);}
 }

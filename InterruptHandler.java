@@ -3,7 +3,7 @@ import java.util.Queue;
 
 // Inner Classes
 class InterruptHandler {
-    Queue<Interrupt> interruptQueue;
+    private final Queue<Interrupt> interruptQueue;
 
     public InterruptHandler(){
         this.interruptQueue = new LinkedList<>();
