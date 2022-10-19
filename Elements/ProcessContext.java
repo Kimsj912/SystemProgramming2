@@ -1,7 +1,9 @@
+package Elements;
+
 import Enums.EProcessStatus;
 
 public class ProcessContext {
-    // Process Status
+    // Elements.Process Status
     private int oid; // owner Id (Account)
     private int pid;
 
@@ -29,7 +31,7 @@ public class ProcessContext {
     private int MBR;
 
     public ProcessContext(String name, int pid, int oid){
-        // Process Status
+        // Elements.Process Status
         this.oid = oid;
         this.pid = pid;
         this.name = name;

@@ -1,7 +1,15 @@
+package OS;
+
+import Elements.Instruction;
+import Elements.Interrupt;
+import Elements.Process;
+import Elements.Program;
 import Enums.EInterrupt;
+import HW.CPU;
+import HW.Memory;
+import HW.Storage;
 
 import java.io.IOException;
-import java.util.*;
 
 public class OS {
     // Association
@@ -42,7 +50,7 @@ public class OS {
         interruptHandler.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, scheduler.deReadyQueue()));
 
         // Timer
-        // TODO: UI로 파일 추가된게 있는지 체크하는 로직 추가하여 Process 추가로직 구성
+        // TODO: UI로 파일 추가된게 있는지 체크하는 로직 추가하여 Elements.Process 추가로직 구성
         scheduler.start();
     }
 

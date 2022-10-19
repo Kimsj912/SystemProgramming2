@@ -1,3 +1,10 @@
+package Main;
+
+import HW.CPU;
+import HW.Memory;
+import HW.Storage;
+import OS.OS;
+
 import java.io.IOException;
 
 public class Main {

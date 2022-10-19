@@ -1,3 +1,5 @@
+package Elements;
+
 import Constants.ConstantData;
 
 import java.io.BufferedReader;
@@ -33,14 +35,14 @@ public class Program {
 
     @Override
     public String toString(){
-        return "Program{\n" +
+        return "Elements.Program{\n" +
                 "    name='" + name + "',\n" +
                 "    codes='" + codes + ",\n" +
                 '}';
     }
 }
 
-// Program File Style
+// Elements.Program File Style
 /**
  * process1
  * set x

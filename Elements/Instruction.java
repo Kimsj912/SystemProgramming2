@@ -1,3 +1,5 @@
+package Elements;
+
 public class Instruction {
     private String opcode;
     private String operand;
@@ -16,6 +18,6 @@ public class Instruction {
     }
 
     public void run(){
-        System.out.println("Instruction: " + opcode + " " + operand);
+        System.out.println("Elements.Instruction: " + opcode + " " + operand);
     }
 }

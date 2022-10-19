@@ -4,7 +4,7 @@ public enum ConstantData {
     startPrograms("System/startPrograms.txt"),
 
 
-    // Storage
+    // HW.Storage
     directoryName("Data/"),
     fileExtension(".txt");
 

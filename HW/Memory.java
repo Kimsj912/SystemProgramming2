@@ -1,3 +1,8 @@
+package HW;
+
+import Elements.Process;
+import Elements.Program;
+
 public class Memory {
     private static int OWNER_ID = 1; // 일단 단일 유저(owner)로 보자.
 

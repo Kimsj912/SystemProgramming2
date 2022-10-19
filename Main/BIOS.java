@@ -1,3 +1,10 @@
+package Main;
+
+import HW.CPU;
+import HW.Memory;
+import HW.Storage;
+import OS.OS;
+
 public class BIOS {
     public BIOS () {
         // IO들을 깨운다.

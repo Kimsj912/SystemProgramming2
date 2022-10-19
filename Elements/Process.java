@@ -1,3 +1,8 @@
+package Elements;
+
+import Elements.Instruction;
+import Elements.ProcessContext;
+
 import java.util.Vector;
 
 public class Process {

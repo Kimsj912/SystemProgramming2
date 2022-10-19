@@ -1,11 +1,16 @@
+package OS;
+
+import Elements.Interrupt;
 import Enums.EInterrupt;
 import Enums.EProcessStatus;
+import HW.CPU;
+import HW.Memory;
+import Elements.Process;
 
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 
 public class Scheduler extends Thread {
 
@@ -74,13 +79,13 @@ public class Scheduler extends Thread {
             case eTimeOut: // TimeOut
                 System.out.println("...time out");
                 // Context Switching (with readyQueue)
-                // Process old Process
+                // Elements.Process old Elements.Process
                 oldProcess = interrupt.getProcess();
                 oldProcess.setContext(cpu.getContext());
                 oldProcess.getContext().setStatus(EProcessStatus.READY);
                 enReadyQueue(oldProcess);
 
-                // Process new Process
+                // Elements.Process new Elements.Process
                 newProcess = deReadyQueue();
                 if(newProcess == null) {
                     this.currentProcess= null;
@@ -104,18 +109,18 @@ public class Scheduler extends Thread {
                 System.out.println("Process Started: " + this.currentProcess.getContext().getName());
                 break;
             case eProcessTerminated:
-                // Process old Process
+                // Elements.Process old Elements.Process
                 oldProcess = interrupt.getProcess();
                 oldProcess.setContext(cpu.getContext());
                 oldProcess.getContext().setStatus(EProcessStatus.TERMINATED);
                 // TODO: 요기에 Storage까지 프로세스 종료 처리 로직 추가
 
-                // Process new Process
+                // Elements.Process new Elements.Process
                 newProcess = deReadyQueue();
                 if(newProcess == null){
                     currentProcess = null;
                     this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eIdle,null));
-                    System.out.println("All Process Terminated");
+                    System.out.println("All Elements.Process Terminated");
                 } else{
                     this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, newProcess));
                     System.out.println("Context Switched by Terminated: " + oldProcess.getContext().getName()+ " -> "+ newProcess.getContext().getName());
