@@ -19,8 +19,7 @@ public class UI  extends Thread{
                 Process process =  loader.load(fileName);
                 scheduler.enReadyQueue(process); // Critical Section을 UI에 만들게 한다.
             }
-            String fileName = sc.next();
-//            command = sc.next();
+            command = sc.next();
         }
 
         sc.close();
