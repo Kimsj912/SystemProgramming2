@@ -11,10 +11,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Queue;
 
 public class OSSimulator extends JFrame {
-
+    // Attributes
     private final DefaultListModel<String> model;
     JScrollPane scrolled;
 
@@ -116,8 +117,12 @@ public class OSSimulator extends JFrame {
 
     }
 
-    public void addInstructionLog(String log){
-        instructionPanel.add(new JLabel(log));
+    public void addInstructionLog(String log, Color color){
+        instructionPanel.add(new JLabel(log){
+            {
+                this.setForeground(color);
+            }
+        });
         instructionPanel.updateUI();
     }
 

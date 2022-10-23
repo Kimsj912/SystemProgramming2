@@ -3,7 +3,6 @@ package OS;
 import Elements.Instruction;
 import Elements.Interrupt;
 import Elements.Process;
-import Elements.Program;
 import Enums.EInterrupt;
 import HW.CPU;
 import HW.Memory;
@@ -58,7 +57,7 @@ public class OS {
         if(nextInstruction == null) interruptHandler.addInterrupt(new Interrupt(EInterrupt.eProcessTerminated, process));
         else{
             cpu.setInstruction(nextInstruction);
-            this.ui.addInstructionLog(nextInstruction.toString());
+            this.ui.addInstructionLog(process, nextInstruction.toString());
         }
     }
 }
