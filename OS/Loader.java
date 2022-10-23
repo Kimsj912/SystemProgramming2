@@ -23,5 +23,11 @@ public class Loader {
         scheduler.enReadyQueue(process);
     }
 
+    public void initialLoad(Program[] startPrograms) throws IOException {
+        for (Program program : startPrograms) {
+            load(program);
+        }
+    }
+
 
 }

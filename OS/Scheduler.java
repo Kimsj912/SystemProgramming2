@@ -46,7 +46,6 @@ public class Scheduler extends Thread {
         this.os = os;
         this.interruptHandler = interruptHandler;
         this.ui = ui;
-
     }
 
     // Methods

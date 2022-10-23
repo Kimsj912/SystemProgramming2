@@ -38,7 +38,6 @@ public class OS {
     }
 
     public void initialize(){
-        // IO √ ±‚»≠ (association IO Devices)
         this.ui.initialize(loader,scheduler,interruptHandler);
         this.interruptHandler.initialize(scheduler, ui);
         this.loader.initialize(memory, scheduler);
@@ -46,6 +45,10 @@ public class OS {
     }
 
     public void run() throws IOException{
+        // Load Start Programs
+        loader.initialLoad(storage.startPrograms());
+
+        // Start Thread
         ui.start();
         scheduler.start();
     }

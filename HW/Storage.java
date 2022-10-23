@@ -37,17 +37,17 @@ public class Storage extends HashMap<String, Program> {
         this.ui = ui;
     }
 
-//    public Program[] startPrograms() throws IOException{
-//        // Read Start Elements.Program list
-//        File startProgramList = new File(ConstantData.startPrograms.getText());
-//        BufferedReader br = new BufferedReader(new FileReader(startProgramList));
-//        String line = br.readLine();
-//
-//        // Make Start Elements.Program array
-//        Program[] startPrograms = new Program[Integer.parseInt(line)]; // 처음에 startProgram의 개수를 알려줌.
-//        for(int i = 0; (line = br.readLine()) != null; i++)startPrograms[i] = this.get(line);
-//        return startPrograms;
-//    }
+    public Program[] startPrograms() throws IOException{
+        // Read Start Elements.Program list
+        File startProgramList = new File(ConstantData.startPrograms.getText());
+        BufferedReader br = new BufferedReader(new FileReader(startProgramList));
+        String line = br.readLine();
+
+        // Make Start Elements.Program array
+        Program[] startPrograms = new Program[Integer.parseInt(line)]; // 처음에 startProgram의 개수를 알려줌.
+        for(int i = 0; (line = br.readLine()) != null; i++)startPrograms[i] = this.get(line);
+        return startPrograms;
+    }
     public void addProgram(Program program){
         this.put(program.getName(), program);
     }
