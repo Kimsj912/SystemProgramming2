@@ -57,9 +57,8 @@ public class OS {
     public void executeInstruction(Process process){
         Instruction nextInstruction = process.getInstruction();
         if(nextInstruction == null) interruptHandler.addInterrupt(new Interrupt(EInterrupt.eProcessTerminated, process));
-        else {
-            cpu.executeInstruction(nextInstruction);
-            // draw
+        else{
+            cpu.setInstruction(nextInstruction);
             this.ui.addInstructionLog(nextInstruction.toString());
         }
     }

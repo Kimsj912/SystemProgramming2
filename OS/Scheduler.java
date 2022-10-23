@@ -78,62 +78,55 @@ public class Scheduler extends Thread {
             case eIdle: // 더이상 읽을게 없는 상태
                 break;
             case eRunning:
-//                this.ui.addLog(interrupt.getProcess().getContext().getName() + " is running");
-//                System.out.println("Process " + interrupt.getProcess().getPid() + " is running.");
-//                this.ui.addLog("Process " + interrupt.getProcess().getPid() + " is running.");
+                this.cpu.getContext().setStatus(EProcessStatus.RUNNING);
+                this.ui.addLog("Process " + interrupt.getProcess().getProcessName() + " is running.");
                 break;
             case eTimeOut: // TimeOut
-//                System.out.println("...time out");
                 this.ui.addLog("...time out");
                 // Context Switching (with readyQueue)
-                // Elements.Process old Elements.Process
+                // oldProcess
                 oldProcess = interrupt.getProcess();
                 oldProcess.setContext(cpu.getContext());
                 oldProcess.getContext().setStatus(EProcessStatus.READY);
                 enReadyQueue(oldProcess);
 
-                // Elements.Process new Elements.Process
+                // new Process
                 newProcess = deReadyQueue();
                 if(newProcess == null) {
                     this.currentProcess= null;
                     this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eIdle, null));
                     return;
                 }
-                this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, newProcess));
-//                System.out.println("Context Switched by Interrupted: " + oldProcess.getContext().getName()+ " -> "+ newProcess.getContext().getName());
                 this.ui.addLog("Context Switched by Interrupted: " + oldProcess.getContext().getName()+ " -> "+ newProcess.getContext().getName());
+                this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, newProcess));
                 break;
             case eProcessStarted:
                 this.currentProcess = interrupt.getProcess();
                 cpu.setContext(this.currentProcess.getContext());
                 cpu.getContext().setStatus(EProcessStatus.RUNNING);
-                new Timer().schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        interruptHandler.addInterrupt(new Interrupt(EInterrupt.eTimeOut, currentProcess));
-                    }
-                }, 2010);
-                this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eRunning, this.currentProcess));
-//                System.out.println("Process Started: " + this.currentProcess.getContext().getName());
-                this.ui.addLog("Process Started: " + this.currentProcess.getContext().getName());
+                this.ui.addLog(this.currentProcess.getProcessName()+" is Started.");
+//                new Timer().schedule(new TimerTask() {@Override public void run() {
+//                    interruptHandler.addInterrupt(new Interrupt(EInterrupt.eTimeOut, currentProcess));}
+//                }, 1500);
+//                this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eRunning, this.currentProcess));
                 break;
             case eProcessTerminated:
                 // Elements.Process old Elements.Process
                 oldProcess = interrupt.getProcess();
                 oldProcess.setContext(cpu.getContext());
                 oldProcess.getContext().setStatus(EProcessStatus.TERMINATED);
+                this.ui.addLog(oldProcess.getProcessName() + " is terminated");
                 // TODO: 요기에 Storage까지 프로세스 종료 처리 로직 추가
 
-                // Elements.Process new Elements.Process
+                // new Process
                 newProcess = deReadyQueue();
-                if(newProcess == null){
+                if(newProcess == null) {
                     currentProcess = null;
-                    this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eIdle,null));
-                    this.ui.addLog("All Process Terminated");
-                } else{
-                    this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, newProcess));
-                    this.ui.addLog(interrupt.getProcess().getProcessName() + " is terminated");
+                    this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eIdle, null));
+                    break;
                 }
+                this.ui.addLog("Context Switched by Terminated: " + oldProcess.getContext().getName()+ " -> "+ newProcess.getContext().getName());
+                this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, newProcess));
                 break;
             // TODO: 구현 필요
             case eIOStarted:

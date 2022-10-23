@@ -27,12 +27,12 @@ public class Loader {
     }
     
     public void initialLoad() throws IOException{
-        try{
-            for (Program program : storage.startPrograms()) load(program);
-            interruptHandler.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, scheduler.deReadyQueue()));
-        } catch (IOException e){
-            e.printStackTrace();
-        }
+//        try{
+//            for (Program program : storage.startPrograms()) load(program);
+//            interruptHandler.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, scheduler.deReadyQueue()));
+//        } catch (IOException e){
+//            e.printStackTrace();
+//        }
     }
 
     public void load(Program program) {

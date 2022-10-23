@@ -43,23 +43,12 @@ public class UI extends Thread {
     public void run(){
         osSimulator.setVisible(true);
         while (true) {
-            updateUI();
             try {
-                Thread.sleep(800);
+                updateUI();
+                Thread.sleep(300);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-
-//            System.out.print("Enter the program name to load.\n>> ");
-//            try {
-//                String programName = br.readLine();
-//                Program program = storage.getProgram(programName);
-//                if(program == null) throw new IOException("Program not found.");
-//                loader.load(program);
-//            } catch (IOException e) {
-//                System.out.println("The Program does not exist.");
-//                System.out.println(e.getMessage());
-//            }
         }
     }
 

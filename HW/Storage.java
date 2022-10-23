@@ -23,7 +23,6 @@ public class Storage extends HashMap<String, Program> {
         assert files != null; // listFiles 읽어보니 null이 오진 않을 것 같음. assert만 남겨도 무리 없으리라 봄.
         for (File file : files) {
             try {
-                System.out.println("File: " + file.getName());
                 if(file.getName().endsWith(ConstantData.fileExtension.getText())) {
                     Program program = new Program(file.getName());
                     addProgram(program);

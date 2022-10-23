@@ -156,7 +156,7 @@ public class OSSimulator extends JFrame {
     public void updateQueue(Queue<Process> readyQueue, Queue<Process> waitingQueue, Process currentProcess){
         setReadyQueuePanel(readyQueue);
         setWaitingQueuePanel(waitingQueue);
-        if(currentProcess != null) setCurrentProcess(currentProcess.getProcessName());
+        setCurrentProcess((currentProcess == null)? "" : currentProcess.getProcessName());
         queuePanel.updateUI();
     }
 

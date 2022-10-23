@@ -8,6 +8,8 @@ public class ProcessContext {
     private int pid;
 
     private String name;
+    private Instruction instruction;
+
     public String getName(){return name;}
     public void setName(String name){this.name = name;}
     private EProcessStatus status;
@@ -19,6 +21,78 @@ public class ProcessContext {
     private int ds;
     private int ss;
     private int hs;
+
+    public int getOid(){
+        return oid;
+    }
+
+    public void setOid(int oid){
+        this.oid = oid;
+    }
+
+    public int getCs(){
+        return cs;
+    }
+
+    public void setCs(int cs){
+        this.cs = cs;
+    }
+
+    public int getDs(){
+        return ds;
+    }
+
+    public void setDs(int ds){
+        this.ds = ds;
+    }
+
+    public int getSs(){
+        return ss;
+    }
+
+    public void setSs(int ss){
+        this.ss = ss;
+    }
+
+    public int getHs(){
+        return hs;
+    }
+
+    public void setHs(int hs){
+        this.hs = hs;
+    }
+
+    public int getPC(){
+        return PC;
+    }
+
+    public void setPC(int PC){
+        this.PC = PC;
+    }
+
+    public int getAC(){
+        return AC;
+    }
+
+    public void setAC(int AC){
+        this.AC = AC;
+    }
+
+    public int getMAR(){
+        return MAR;
+    }
+
+    public void setMAR(int MAR){
+        this.MAR = MAR;
+    }
+
+    public int getMBR(){
+        return MBR;
+    }
+
+    public void setMBR(int MBR){
+        this.MBR = MBR;
+    }
 
     // cu
     private int PC;
@@ -52,7 +126,4 @@ public class ProcessContext {
         return pid;
     }
 
-    public void setPid(int pid){
-        this.pid = pid;
-    }
 }
