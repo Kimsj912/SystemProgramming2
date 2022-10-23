@@ -8,6 +8,8 @@ import java.util.HashMap;
 
 public class Storage extends HashMap<String, Program> {
 
+    private UI ui;
+
     public Storage (){
         super();
 
@@ -32,6 +34,10 @@ public class Storage extends HashMap<String, Program> {
         }
     }
 
+    public void initialize(UI ui) throws IOException{
+        this.ui = ui;
+    }
+
     public Program[] startPrograms() throws IOException{
         // Read Start Elements.Program list
         File startProgramList = new File(ConstantData.startPrograms.getText());
@@ -43,5 +49,15 @@ public class Storage extends HashMap<String, Program> {
         for(int i = 0; (line = br.readLine()) != null; i++)startPrograms[i] = this.get(line);
         return startPrograms;
     }
-    public void addProgram(Program program){this.put(program.getName(), program);}
+    public void addProgram(Program program){
+        this.put(program.getName(), program);
+    }
+    public Program getProgram(String name){return this.get(name);}
+
+    public Program[] getPrograms(){
+        Program[] programs = new Program[this.size()];
+        int i = 0;
+        for(Program program : this.values())programs[i++] = program;
+        return programs;
+    }
 }

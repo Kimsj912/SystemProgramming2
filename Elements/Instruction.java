@@ -18,6 +18,10 @@ public class Instruction {
     }
 
     public void run(){
-        System.out.println("Elements.Instruction: " + opcode + " " + operand);
+//        System.out.println("Instruction: " + opcode + " " + operand);
+    }
+
+    public String toString(){
+        return getOpcode() + " " + getOperand();
     }
 }

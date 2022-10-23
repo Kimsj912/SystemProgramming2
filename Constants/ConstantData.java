@@ -9,8 +9,6 @@ public enum ConstantData {
     fileExtension(".txt");
 
 
-
-
     // Getter & Setter
     private String text;
     public String getText() { return text; }

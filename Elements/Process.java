@@ -1,8 +1,5 @@
 package Elements;
 
-import Elements.Instruction;
-import Elements.ProcessContext;
-
 import java.util.Vector;
 
 public class Process {
@@ -35,6 +32,18 @@ public class Process {
         return this.codeSegment.getInstruction();
     }
 
+    public int getPid(){
+        return this.context.getPid();
+    }
+
+    public String getProcessName(){
+        return this.context.getName();
+    }
+
+    @Override
+    public String toString(){
+        return this.getProcessName();
+    }
 
     // Inner Classes
     private static class CodeSegment {
@@ -62,7 +71,7 @@ public class Process {
             else return null;
         }
     }
-    private class StackSegment{ }
-    private class HeapSegment{ }
-    private class DataSegment { }
+    private static class StackSegment{ }
+    private static class HeapSegment{ }
+    private static class DataSegment { }
 }

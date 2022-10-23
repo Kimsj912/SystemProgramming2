@@ -40,6 +40,10 @@ public class Program {
                 "    codes='" + codes + ",\n" +
                 '}';
     }
+
+    public String getProgramName(){
+        return this.name;
+    }
 }
 
 // Elements.Program File Style

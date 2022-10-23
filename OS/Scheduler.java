@@ -6,6 +6,7 @@ import Enums.EProcessStatus;
 import HW.CPU;
 import HW.Memory;
 import Elements.Process;
+import HW.UI;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -20,22 +21,26 @@ public class Scheduler extends Thread {
     private CPU cpu;
     private Loader loader;
     private OS os;
+    private UI ui;
 
     // Attributes
     private Queue<Process> readyQueue;
+    private Queue<Process> waitQueue;
     private Process currentProcess;
 
 
     public Scheduler() {
         this.readyQueue = new LinkedList<>();
+        this.waitQueue = new LinkedList<>();
     }
 
-    public void initialize(Memory memory, CPU cpu, Loader loader, OS os, InterruptHandler interruptHandler){
+    public void initialize(Memory memory, CPU cpu, Loader loader, OS os, InterruptHandler interruptHandler, UI ui){
         this.memory = memory;
         this.cpu = cpu;
         this.loader = loader;
         this.os = os;
         this.interruptHandler = interruptHandler;
+        this.ui = ui;
 
     }
 
@@ -47,7 +52,7 @@ public class Scheduler extends Thread {
                     this.currentProcess = deReadyQueue();
                     if(this.currentProcess == null) {
                         this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eIdle, null));
-                        return;
+                        continue;
                     }
                     this.currentProcess.getContext().setStatus(EProcessStatus.RUNNING);
                     this.cpu.setContext(this.currentProcess.getContext());
@@ -62,7 +67,7 @@ public class Scheduler extends Thread {
     }
 
     public synchronized void enReadyQueue(Process process) {readyQueue.add(process);}
-    public synchronized Process deReadyQueue() {return readyQueue.poll();}
+    public Process deReadyQueue() {return readyQueue.poll();}
 
 
     public void checkInterrupt(){
@@ -71,13 +76,15 @@ public class Scheduler extends Thread {
         if(interrupt == null || interrupt.getType() == null) return;
         switch(interrupt.getType()){
             case eIdle: // 더이상 읽을게 없는 상태
-                // TODO: UI로 ReadyQueue에 enqueue되는게 있는지 관찰자 패턴으로 체크하기
-                System.out.println("waiting new process...");
                 break;
             case eRunning:
+//                this.ui.addLog(interrupt.getProcess().getContext().getName() + " is running");
+//                System.out.println("Process " + interrupt.getProcess().getPid() + " is running.");
+//                this.ui.addLog("Process " + interrupt.getProcess().getPid() + " is running.");
                 break;
             case eTimeOut: // TimeOut
-                System.out.println("...time out");
+//                System.out.println("...time out");
+                this.ui.addLog("...time out");
                 // Context Switching (with readyQueue)
                 // Elements.Process old Elements.Process
                 oldProcess = interrupt.getProcess();
@@ -93,7 +100,8 @@ public class Scheduler extends Thread {
                     return;
                 }
                 this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, newProcess));
-                System.out.println("Context Switched by Interrupted: " + oldProcess.getContext().getName()+ " -> "+ newProcess.getContext().getName());
+//                System.out.println("Context Switched by Interrupted: " + oldProcess.getContext().getName()+ " -> "+ newProcess.getContext().getName());
+                this.ui.addLog("Context Switched by Interrupted: " + oldProcess.getContext().getName()+ " -> "+ newProcess.getContext().getName());
                 break;
             case eProcessStarted:
                 this.currentProcess = interrupt.getProcess();
@@ -106,7 +114,8 @@ public class Scheduler extends Thread {
                     }
                 }, 2010);
                 this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eRunning, this.currentProcess));
-                System.out.println("Process Started: " + this.currentProcess.getContext().getName());
+//                System.out.println("Process Started: " + this.currentProcess.getContext().getName());
+                this.ui.addLog("Process Started: " + this.currentProcess.getContext().getName());
                 break;
             case eProcessTerminated:
                 // Elements.Process old Elements.Process
@@ -120,10 +129,10 @@ public class Scheduler extends Thread {
                 if(newProcess == null){
                     currentProcess = null;
                     this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eIdle,null));
-                    System.out.println("All Elements.Process Terminated");
+                    this.ui.addLog("All Process Terminated");
                 } else{
                     this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, newProcess));
-                    System.out.println("Context Switched by Terminated: " + oldProcess.getContext().getName()+ " -> "+ newProcess.getContext().getName());
+                    this.ui.addLog(interrupt.getProcess().getProcessName() + " is terminated");
                 }
                 break;
             // TODO: 구현 필요
@@ -134,5 +143,18 @@ public class Scheduler extends Thread {
         }
 
 
+    }
+
+    // For UI
+    public Queue<Process> getReadyQueue(){
+        return readyQueue;
+    }
+
+    public Queue<Process> getWaitingQueue(){
+        return waitQueue;
+    }
+
+    public Process getCurrentProcess(){
+        return currentProcess;
     }
 }
