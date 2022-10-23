@@ -40,18 +40,14 @@ public class OS {
     public void initialize(){
         // IO 초기화 (association IO Devices)
         this.ui.initialize(loader,scheduler,interruptHandler);
-        this.scheduler.initialize(memory, cpu, loader, this, interruptHandler, ui);
-        this.loader.initialize(memory, storage, scheduler, interruptHandler);
+        this.interruptHandler.initialize(scheduler, ui);
+        this.loader.initialize(memory, scheduler);
+        this.scheduler.initialize(this, interruptHandler, ui);
     }
 
     public void run() throws IOException{
-        // OS의 시작과 함께 시작 프로그램을 실행시킨다.
         ui.start();
-        loader.initialLoad();
-        // Timer
-        // TODO: UI로 파일 추가된게 있는지 체크하는 로직 추가하여 Process 추가로직 구성
         scheduler.start();
-
     }
 
     public void executeInstruction(Process process){

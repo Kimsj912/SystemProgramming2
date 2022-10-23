@@ -2,9 +2,9 @@ package Elements;
 
 public class Instruction {
     private String opcode;
-    private String operand;
+    private String[] operand;
 
-    public Instruction(String opcode, String operand) {
+    public Instruction(String opcode, String ...operand) {
         this.opcode = opcode;
         this.operand = operand;
     }
@@ -14,7 +14,7 @@ public class Instruction {
     }
 
     public String getOperand() {
-        return operand;
+        return String.join(" ", operand);
     }
 
     public void run(){

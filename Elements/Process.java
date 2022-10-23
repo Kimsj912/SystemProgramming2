@@ -1,5 +1,7 @@
 package Elements;
 
+import Enums.EProcessStatus;
+
 import java.util.Vector;
 
 public class Process {
@@ -7,10 +9,10 @@ public class Process {
 
     // Attributes
     private ProcessContext context;
-    private final CodeSegment codeSegment;
-    private final DataSegment dataSegment;
-    private final StackSegment stackSegment;
-    private final HeapSegment heapSegment;
+    private CodeSegment codeSegment;
+    private DataSegment dataSegment;
+    private StackSegment stackSegment;
+    private HeapSegment heapSegment;
 
     // Getter & Setter
     public ProcessContext getContext(){return context;}
@@ -18,13 +20,27 @@ public class Process {
 
     // Constructor
     public Process(String name, int pid, int oid, String codes) {
-
         this.context = new ProcessContext(name, pid, oid);
-        // TODO: initialize (stack, heap, data) segments
-        this.codeSegment = new CodeSegment(codes);
-        this.dataSegment = new DataSegment(); // Empty Stack
-        this.stackSegment = new StackSegment(); // Empty Stack
-        this.heapSegment = new HeapSegment(); // Empty Heap
+
+        String flag = "";
+        for(String code : codes.split("\n")){
+            if(code.strip().equals("")) continue;
+            if(code.charAt(0) == '_'){
+                flag = code.substring(1);
+                continue;
+            }
+            if(flag.equals("data")) {
+                String[] cmd = code.split(" ");
+                switch(cmd[0]){
+                    case "code" -> this.codeSegment = new CodeSegment(Integer.parseInt(cmd[1]));
+                    case "data" -> this.dataSegment = new DataSegment(Integer.parseInt(cmd[1]));
+                    case "stack" -> this.stackSegment = new StackSegment(Integer.parseInt(cmd[1]));
+                    case "heap" -> this.heapSegment = new HeapSegment(Integer.parseInt(cmd[1]));
+                }
+            } else if(flag.equals("code")){
+                this.codeSegment.addCode(code);
+            }
+        }
     }
 
     // Methods
@@ -40,30 +56,39 @@ public class Process {
         return this.context.getName();
     }
 
+    public void setStatus(EProcessStatus status){
+        this.context.setStatus(status);
+    }
+
+    public EProcessStatus getStatus(){
+        return this.context.getStatus();
+    }
+
     @Override
     public String toString(){
         return this.getProcessName();
     }
 
     // Inner Classes
-    private static class CodeSegment {
+    private static class CodeSegment extends Segment{
         private final Vector<Instruction> instructions;
-        private int size;
-        private int base;
 
-        public CodeSegment(String codes){
+        public CodeSegment(int maxSize){
+            super(maxSize);
             this.instructions = new Vector<Instruction>();
-            this.size = 0;
-            this.base = 0;
+        }
 
-            String[] codeLines = codes.split("\n");
-
-            for (String codeLine : codeLines) {
-                String[] code = codeLine.split(" ");
-                Instruction instruction = new Instruction(code[0], code[1]);
-                this.instructions.add(instruction);
-                this.size++;
+        public void addCode(String codeLine){
+            String[] code = codeLine.split(" ");
+            System.out.println(codeLine);
+            if(code.length == 1){
+                this.instructions.add(new Instruction(code[0]));
+            } else if(code.length == 2){
+                this.instructions.add(new Instruction(code[0], code[1]));
+            } else if(code.length == 3){
+                this.instructions.add(new Instruction(code[0], code[1], code[2]));
             }
+            this.size++;
         }
 
         public Instruction getInstruction(){
@@ -71,7 +96,32 @@ public class Process {
             else return null;
         }
     }
-    private static class StackSegment{ }
-    private static class HeapSegment{ }
-    private static class DataSegment { }
+    private static class StackSegment extends Segment{
+        public StackSegment(int maxSize){
+            super(maxSize);
+        }
+    }
+    private static class HeapSegment  extends Segment{
+        public HeapSegment(int maxSize){
+            super(maxSize);
+        }
+    }
+    private static class DataSegment extends Segment {
+        public DataSegment(int maxSize){
+            super(maxSize);
+        }
+    }
+
+    private static class Segment{
+        protected int maxSize;
+        public int getMaxSize(){return maxSize;}
+        public void setMaxSize(int maxSize){this.maxSize = maxSize;}
+
+        protected int base = 0;
+        protected int size = 0;
+
+        public Segment(int maxSize){
+            this.maxSize = maxSize;
+        }
+    }
 }

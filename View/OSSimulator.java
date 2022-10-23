@@ -65,7 +65,7 @@ public class OSSimulator extends JFrame {
 
         programPanel = new JPanel();
         programPanel.setLayout(new GridLayout(1, 1));
-        programPanel.setBorder(BorderFactory.createTitledBorder("Program"));
+        programPanel.setBorder(BorderFactory.createTitledBorder("Storage"));
         programPanel.add((scrolled = new JScrollPane(programList = new JList<String>((model = new DefaultListModel<String>())))));
         programList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         programList.setLayoutOrientation(JList.VERTICAL);
