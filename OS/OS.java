@@ -40,7 +40,8 @@ public class OS {
         this.ui.initialize(loader,scheduler,interruptHandler);
         this.interruptHandler.initialize(scheduler, ui);
         this.loader.initialize(memory, scheduler);
-        this.scheduler.initialize(this, interruptHandler, ui);
+        this.scheduler.initialize(this, interruptHandler, ui, cpu);
+        this.cpu.initialize(interruptHandler, scheduler, ui);
     }
 
     public void run() throws IOException{
@@ -52,12 +53,4 @@ public class OS {
         scheduler.start();
     }
 
-    public void executeInstruction(Process process){
-        Instruction nextInstruction = process.getInstruction();
-        if(nextInstruction == null) interruptHandler.addInterrupt(new Interrupt(EInterrupt.eProcessTerminated, process));
-        else{
-            cpu.setInstruction(nextInstruction);
-            this.ui.addInstructionLog(process, nextInstruction.toString());
-        }
-    }
 }

@@ -6,7 +6,14 @@ public enum ConstantData {
 
     // HW.Storage
     directoryName("Data/"),
-    fileExtension(".txt");
+    fileExtension(".txt"),
+
+    // Timeslice
+    cpuTimeSlice("300"),
+    timeSlice("2000"),
+    ioInterrupt("4000"),
+    moniter("100");
+
 
 
     // Getter & Setter

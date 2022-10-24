@@ -80,14 +80,9 @@ public class Process {
 
         public void addCode(String codeLine){
             String[] code = codeLine.split(" ");
-            System.out.println(codeLine);
-            if(code.length == 1){
-                this.instructions.add(new Instruction(code[0]));
-            } else if(code.length == 2){
-                this.instructions.add(new Instruction(code[0], code[1]));
-            } else if(code.length == 3){
-                this.instructions.add(new Instruction(code[0], code[1], code[2]));
-            }
+            if(code.length == 1)this.instructions.add(new Instruction(code[0]));
+            else if(code.length == 2)this.instructions.add(new Instruction(code[0], code[1]));
+            else if(code.length == 3)this.instructions.add(new Instruction(code[0], code[1], code[2]));
             this.size++;
         }
 

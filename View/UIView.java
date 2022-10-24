@@ -9,12 +9,9 @@ import OS.InterruptHandler;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Queue;
 
-public class OSSimulator extends JFrame {
+public class UIView extends JFrame {
     // Attributes
     private final DefaultListModel<String> model;
     JScrollPane scrolled;
@@ -36,7 +33,7 @@ public class OSSimulator extends JFrame {
     private InterruptHandler interruptHandler;
     private Storage storage;
 
-    public OSSimulator(){
+    public UIView(){
         super("OS Simulator");
         this.setSize(1200, 800);
         this.setBackground(Color.WHITE);
@@ -89,7 +86,10 @@ public class OSSimulator extends JFrame {
                 this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
             }
         };
-        centerPanel.add(instructionPanel);
+        JScrollPane instructionScrolled = new JScrollPane(instructionPanel);
+        instructionScrolled.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        instructionScrolled.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        centerPanel.add(instructionScrolled);
 
         logPanel = new JPanel();
         logPanel.setLayout(new GridLayout(1, 1));
@@ -100,8 +100,8 @@ public class OSSimulator extends JFrame {
             }
         }));
         JScrollPane scrollPane = new JScrollPane(logPanel);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPane.setBounds(50, 30, 300, 50);
         centerPanel.add(scrollPane);
 
@@ -126,8 +126,12 @@ public class OSSimulator extends JFrame {
         instructionPanel.updateUI();
     }
 
-    public void addLog(String log){
-        logText.add(new JLabel(log));
+    public void addLog(String log, Color color){
+        logText.add(new JLabel(log){
+            {
+                this.setForeground(color);
+            }
+        });
         logText.updateUI();
     }
 
@@ -156,13 +160,6 @@ public class OSSimulator extends JFrame {
     public void setCurrentProcess(String process){
         currentProcessPanel.removeAll();
         currentProcessPanel.add(new JLabel(process));
-    }
-
-    public void updateQueue(Queue<Process> readyQueue, Queue<Process> waitingQueue, Process currentProcess){
-        setReadyQueuePanel(readyQueue);
-        setWaitingQueuePanel(waitingQueue);
-        setCurrentProcess((currentProcess == null)? "" : currentProcess.getProcessName());
-        queuePanel.updateUI();
     }
 
     public void updateProgramList(){

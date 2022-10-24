@@ -1,5 +1,7 @@
 package OS;
 
+import Constants.ConstantData;
+import Elements.Instruction;
 import Elements.Interrupt;
 import Enums.EInterrupt;
 import Enums.EProcessStatus;
@@ -19,6 +21,7 @@ public class Scheduler extends Thread {
     private OS os;
     private UI ui;
     private InterruptHandler interruptHandler;
+    private CPU cpu;
 
     // Attributes
     private Process currentProcess;
@@ -27,12 +30,14 @@ public class Scheduler extends Thread {
 
     public void enReadyQueue(Process process) {readyQueue.add(process);}
     public Process deReadyQueue() {return readyQueue.poll();}
+    public void enWaitQueue(Process process) {waitQueue.add(process);}
+    public Process deWaitQueue() {return waitQueue.poll();}
 
 
     // For UI
-    public Queue<Process> getReadyQueue(){return readyQueue;}
-    public Queue<Process> getWaitingQueue(){return waitQueue;}
-    public Process getCurrentProcess(){return currentProcess;}
+    public synchronized Queue<Process> getReadyQueue(){return readyQueue;}
+    public synchronized Queue<Process> getWaitingQueue(){return waitQueue;}
+    public synchronized Process getCurrentProcess(){return currentProcess;}
 
 
     // Constructor
@@ -42,10 +47,11 @@ public class Scheduler extends Thread {
     }
 
     // Initialize
-    public void initialize(OS os, InterruptHandler interruptHandler, UI ui){
+    public void initialize(OS os, InterruptHandler interruptHandler, UI ui, CPU cpu){
         this.os = os;
         this.interruptHandler = interruptHandler;
         this.ui = ui;
+        this.cpu = cpu;
     }
 
     // Methods
@@ -53,9 +59,15 @@ public class Scheduler extends Thread {
         while(true){
             try {
                 interruptHandler.handleInterrupts(this.currentProcess);
-                if(this.currentProcess != null) os.executeInstruction(this.currentProcess);
-                else if(!this.readyQueue.isEmpty()) this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, this.deReadyQueue()));
-                sleep(900);
+                if(this.currentProcess != null) {
+                    this.cpu.setProcess(this.currentProcess);
+                }else if(!this.readyQueue.isEmpty()) this.interruptHandler.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, this.deReadyQueue()));
+                else {
+                    // 현재 프로세스도 없고, 준비 큐도 비어있으면 Idle 상태로 전환
+                    this.cpu.setProcess(null);
+                    interruptHandler.addInterrupt(new Interrupt(EInterrupt.eIdle, null));
+                }
+                sleep(Integer.parseInt(ConstantData.cpuTimeSlice.getText()));
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

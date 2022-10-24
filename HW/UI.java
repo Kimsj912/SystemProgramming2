@@ -1,16 +1,15 @@
 package HW;
 
+import Constants.ConstantData;
 import Elements.Process;
-import Elements.Program;
 import OS.InterruptHandler;
 import OS.Loader;
 import OS.Scheduler;
-import View.OSSimulator;
+import View.UIView;
 
 import java.awt.*;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 public class UI extends Thread {
     // Association
@@ -21,11 +20,11 @@ public class UI extends Thread {
     private Loader loader;
 
     // Attributes
-    private OSSimulator osSimulator;
+    private UIView osSimulator;
     private HashMap<Process, Color> colors;
 
     public UI(){
-        osSimulator = new OSSimulator();
+        osSimulator = new UIView();
         colors = new HashMap<>();
     }
 
@@ -47,7 +46,7 @@ public class UI extends Thread {
         while (true) {
             try {
                 updateUI();
-                Thread.sleep(300);
+                Thread.sleep(Integer.parseInt(ConstantData.moniter.getText()));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -55,19 +54,23 @@ public class UI extends Thread {
     }
 
     private void updateUI(){
-        osSimulator.updateQueue(scheduler.getReadyQueue(), scheduler.getWaitingQueue(), scheduler.getCurrentProcess());
+        LinkedList<Process> copyReadyQueue = new LinkedList<>();
+        copyReadyQueue.addAll(scheduler.getReadyQueue());
+        LinkedList<Process> copyWaitQueue = new LinkedList<>();
+        copyWaitQueue.addAll(scheduler.getWaitingQueue());
+        osSimulator.setReadyQueuePanel(copyReadyQueue);
+        osSimulator.setWaitingQueuePanel(copyWaitQueue);
+        osSimulator.setCurrentProcess((scheduler.getCurrentProcess() == null)? "" : scheduler.getCurrentProcess().getProcessName());
         osSimulator.updateProgramList();
     }
 
-    public void addLog(String log){
-        osSimulator.addLog(log);
+    public void addLog(Process process, String log){
+        if(!colors.containsKey(process)) colors.put(process, new Color((int)(Math.random()*0x1000000)));
+        osSimulator.addLog(log, colors.get(process));
     }
 
     public void addInstructionLog(Process process, String log){
-        if(!colors.containsKey(process)){
-            colors.put(process, new Color((int)(Math.random() * 0x1000000)));
-        }
+        if(!colors.containsKey(process)) colors.put(process, new Color((int)(Math.random() * 0x1000000)));
         osSimulator.addInstructionLog(log, colors.get(process));
     }
-
 }

@@ -1,5 +1,6 @@
 package OS;
 
+import Constants.ConstantData;
 import Elements.Interrupt;
 import Elements.Process;
 import Enums.EInterrupt;
@@ -21,6 +22,7 @@ public class InterruptHandler {
     // Attributes
     private Interrupt currentInterrupt;
     private final Queue<Interrupt> interruptQueue;
+    private Object currentProcess;
 
     // Getter & Setter
     public void addInterrupt(Interrupt interrupt){
@@ -38,49 +40,12 @@ public class InterruptHandler {
     }
 
     public void handleInterrupts(Process currentProcess){
-        Process oldProcess, newProcess;
+        this.currentProcess = currentProcess;
         Interrupt interrupt = this.getInterrupt();
         if(interrupt == null || interrupt.getType() == null) return;
 
         currentInterrupt = interrupt;
         this.invokeMethod(interrupt.getType().name());
-
-        switch(interrupt.getType()){
-            case eTimeOut: // TimeOut
-                oldProcess = interrupt.getProcess();
-                this.ui.addLog("TimeOut: " +oldProcess.getProcessName()+"("+oldProcess.getPid()+")");
-                newProcess = scheduler.deReadyQueue();
-                if(newProcess == null) return;
-                this.ui.addLog("");oldProcess.setStatus(EProcessStatus.READY);
-                newProcess.setStatus(EProcessStatus.RUNNING);
-                scheduler.setCurrentProcess(newProcess);
-                this.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, newProcess));
-                break;
-            case eProcessStarted:
-                oldProcess = currentProcess;
-                newProcess = interrupt.getProcess();
-                if(oldProcess != null) oldProcess.setStatus(EProcessStatus.READY);
-                newProcess.setStatus(EProcessStatus.RUNNING);
-                this.scheduler.setCurrentProcess(newProcess);
-                this.ui.addLog("ProcessStarted: " +newProcess.getProcessName()+"("+newProcess.getPid()+")");
-                new Timer().schedule(new TimerTask() {@Override public void run() {addInterrupt(new Interrupt(EInterrupt.eTimeOut, newProcess));}
-                        }, 2011);
-                break;
-            case eProcessTerminated:
-                oldProcess = interrupt.getProcess();
-                oldProcess.setStatus(EProcessStatus.TERMINATED);
-
-                if(this.scheduler.getReadyQueue().isEmpty()) this.addInterrupt(new Interrupt(EInterrupt.eIdle, null));
-                else this.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, this.scheduler.deReadyQueue()));
-                this.ui.addLog("ProcessTerminated: " +oldProcess.getProcessName()+"("+oldProcess.getPid()+")");
-                break;
-            // TODO: 구현 필요
-            case eIOStarted:
-                break;
-            case eIOTerminated:
-                break;
-        }
-
     }
 
     public void eIdle(){
@@ -95,53 +60,93 @@ public class InterruptHandler {
 
     public void eTimeOut(){
         Process oldProcess = currentInterrupt.getProcess();
-        this.ui.addLog("TimeOut: " +oldProcess.getProcessName()+"("+oldProcess.getPid()+")");
         Process newProcess = scheduler.deReadyQueue();
-        if(newProcess == null) return;
-        this.ui.addLog("");oldProcess.setStatus(EProcessStatus.READY);
-        newProcess.setStatus(EProcessStatus.RUNNING);
-        scheduler.setCurrentProcess(newProcess);
-        this.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, newProcess));
+
+
+        if(newProcess == null) {
+            if(oldProcess.getStatus().equals(EProcessStatus.TERMINATED)){
+                scheduler.setCurrentProcess(null);
+//                this.addInterrupt(new Interrupt(EInterrupt.eIdle, null));
+                return;
+            }
+            scheduler.enReadyQueue(oldProcess);
+
+            this.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, oldProcess));
+            this.ui.addLog(oldProcess, "Timeout: " +oldProcess.getProcessName()+"("+oldProcess.getPid()+") -> reRunning");
+        } else {
+            oldProcess.setStatus(EProcessStatus.READY);
+
+            scheduler.enReadyQueue(oldProcess);
+
+            this.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, newProcess));
+            this.ui.addLog(oldProcess, "TimeOut: " +oldProcess.getProcessName()+"("+oldProcess.getPid()+") -> "+newProcess.getProcessName()+"("+newProcess.getPid()+")");
+        }
     }
 
     public void eProcessStarted(){
         Process oldProcess = currentInterrupt.getProcess();
         Process newProcess = currentInterrupt.getProcess();
-        if(oldProcess != null) oldProcess.setStatus(EProcessStatus.READY);
-        newProcess.setStatus(EProcessStatus.RUNNING);
+
+//        if(oldProcess != null) oldProcess.setStatus(EProcessStatus.READY);
+//        newProcess.setStatus(EProcessStatus.RUNNING);
         this.scheduler.setCurrentProcess(newProcess);
-        this.ui.addLog("ProcessStarted: " +newProcess.getProcessName()+"("+newProcess.getPid()+")");
-        new Timer().schedule(new TimerTask() {@Override public void run() {addInterrupt(new Interrupt(EInterrupt.eTimeOut, newProcess));}
-                }, 2011);
+        this.ui.addLog(newProcess,"ProcessStarted: " +newProcess.getProcessName()+"("+newProcess.getPid()+")");
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run(){
+                addInterrupt(new Interrupt(EInterrupt.eTimeOut, newProcess));
+            }
+        }, Integer.parseInt(ConstantData.timeSlice.getText()));
     }
 
     public void eProcessTerminated(){
         Process oldProcess = currentInterrupt.getProcess();
-        oldProcess.setStatus(EProcessStatus.TERMINATED);
+        Process newProcess = scheduler.deReadyQueue();
 
-        if(this.scheduler.getReadyQueue().isEmpty()) this.addInterrupt(new Interrupt(EInterrupt.eIdle, null));
-        else this.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, this.scheduler.deReadyQueue()));
-        this.ui.addLog("ProcessTerminated: " +oldProcess.getProcessName()+"("+oldProcess.getPid()+")");
+//        oldProcess.setStatus(EProcessStatus.TERMINATED);
+        if(newProcess == null) {
+            this.ui.addLog(oldProcess, "ProcessTerminated: " +oldProcess.getProcessName()+"("+oldProcess.getPid()+")");
+            scheduler.setCurrentProcess(null);
+//            this.addInterrupt(new Interrupt(EInterrupt.eIdle, null));
+        }else {
+//            newProcess.setStatus(EProcessStatus.RUNNING);
+
+            this.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, newProcess));
+            this.ui.addLog(oldProcess, "ProcessTerminated: " + oldProcess.getProcessName() + "(" + oldProcess.getPid() + ") -> " + newProcess.getProcessName() + "(" + newProcess.getPid() + ")");
+        }
     }
 
     public void eIOStarted(){
         Process oldProcess = currentInterrupt.getProcess();
         Process newProcess = scheduler.deReadyQueue();
-        if(newProcess == null) return;
-        oldProcess.setStatus(EProcessStatus.WAITING);
-        newProcess.setStatus(EProcessStatus.RUNNING);
-        scheduler.setCurrentProcess(newProcess);
-        this.ui.addLog("IOStarted: " +oldProcess.getProcessName()+"("+oldProcess.getPid()+")");
-        this.ui.addLog("ProcessStarted: " +newProcess.getProcessName()+"("+newProcess.getPid()+")");
-        new Timer().schedule(new TimerTask() {@Override public void run() {addInterrupt(new Interrupt(EInterrupt.eIOTerminated, oldProcess));}
-                }, 5000);
+
+        scheduler.enWaitQueue(oldProcess);
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                addInterrupt(new Interrupt(EInterrupt.eIOTerminated, oldProcess));}
+        }, Integer.parseInt(ConstantData.ioInterrupt.getText()));
+
+        this.scheduler.setCurrentProcess(newProcess);
+        if(newProcess == null) {
+//            this.addInterrupt(new Interrupt(EInterrupt.eIdle, null));
+            this.ui.addLog(oldProcess, "IOStarted: " +oldProcess.getProcessName()+"("+oldProcess.getPid()+") -> reRunning");
+        } else {
+            this.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, newProcess));
+            this.ui.addLog(oldProcess, "IOStarted: " +oldProcess.getProcessName()+"("+oldProcess.getPid()+") -> "+newProcess.getProcessName()+"("+newProcess.getPid()+")");
+        }
     }
 
     public void eIOTerminated(){
         Process oldProcess = currentInterrupt.getProcess();
+
+        Process newProcess;
+        while((newProcess = scheduler.deWaitQueue()) != oldProcess){
+            scheduler.enWaitQueue(newProcess);
+        }
         oldProcess.setStatus(EProcessStatus.READY);
-        this.ui.addLog("IOTerminated: " +oldProcess.getProcessName()+"("+oldProcess.getPid()+")");
-        this.addInterrupt(new Interrupt(EInterrupt.eProcessStarted, oldProcess));
+        scheduler.enReadyQueue(oldProcess);
+        this.ui.addLog(oldProcess,"IOTerminated: " +oldProcess.getProcessName()+"("+oldProcess.getPid()+")");
     }
 
     private void invokeMethod(String name) {
@@ -152,6 +157,4 @@ public class InterruptHandler {
             e.printStackTrace();
         }
     }
-
-
 }

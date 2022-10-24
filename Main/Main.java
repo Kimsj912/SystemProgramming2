@@ -21,7 +21,9 @@ public class Main {
         ui.initialize(cpu, storage);
         storage.initialize(ui);
         os.initialize();
+
         os.run();
+        cpu.start();
     }
 
 
