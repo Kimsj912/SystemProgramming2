@@ -8,7 +8,7 @@ public class Loader {
             File file = new File("Data"+"/"+exeName);
             Scanner sc = new Scanner(file);
             Process process = new Process(); // process가 직접 내용을 읽도록 하여 modularity를 높임.
-            process.load(sc);
+            process.parseCode(sc);
             sc.close();
 
             Scheduler scheduler = new Scheduler();
