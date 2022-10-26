@@ -1,21 +1,20 @@
-import java.util.Vector;
-
 public class Scheduler {
     // Variables
-    private static final int MAX_NUM_PROCESS = 10;
     private boolean bPowerOn;
 
 
-    private ProcessQueue readyQueue;
-    private ProcessQueue waitQueue;
     private Process runningProcess; // 현재 서비스받고 있는 프로세스
 
     private InterruptHandler interruptHandler;
 
+    // Critical Section ---------------------------------------
+    private ProcessQueue readyQueue;
+    private ProcessQueue waitQueue;
     // Getter & Setter
     // 외부에 노출시켜주고 이를 직접 조작하여 사용하겠다고 함.
     public ProcessQueue getReadyQueue(){return readyQueue;}
     public ProcessQueue getWaitQueue(){return waitQueue;}
+    // --------------------------------------------------------
 
     // Constructor
     public Scheduler(){
@@ -34,46 +33,81 @@ public class Scheduler {
             // Check Interrupt
             this.interruptHandler.handle();
             // running
-            if(this.runningProcess != null) continue;
+            if(this.runningProcess == null) continue;
             // Execute Process
 //            this.cpu.executeInstruction(this.runningProcess);
+            this.runningProcess.executeInstruction();
         }
     }
 
 
+    public class InterruptHandler{
+        // Interrupt는 종류가 다양해질수있기 때문에 객체로 만들어야 확장성이 좋다.
 
-    public static class ProcessQueue extends Vector<Process> {
-        private int head, tail, maxSize, currentSize;
-        public ProcessQueue(){
-            this.maxSize = MAX_NUM_PROCESS;
-            this.currentSize = 0;
-            this.head = 0;
-            this.tail = 0;
+        public enum EInterrupt{ // OS Interrupt
+            eTimeout,
+            eIOStarted,
+            eIOTerminated,
+            eProcessTerminated,
+            eProcessStarted,
+        }
+        class Interrupt {
+            private EInterrupt eInterrupt;
+            private Process process;
 
-            for(int i=0;i<maxSize;i++){
-                this.add(null); // vector의 element를 10개 잡아두기만 한것. 이제 이후엔 set만으로 queue안의 값을 통제
+            public Interrupt(EInterrupt eInterrupt, Process process){
+                this.eInterrupt = eInterrupt;
+                this.process = process;
             }
+
+            public EInterrupt getEInterrupt() {return eInterrupt;}
+            public Process getProcess() {return process;}
         }
 
-        // TODO: Exception handling 추가
-        public void enqueue(Process process){ // process를 넣지만 실제론 주소를 넣는다.
-            if(this.currentSize < this.maxSize) {
-                this.set(this.tail, process);
-                this.tail = (this.tail + 1) % this.maxSize;
-                this.currentSize++;
+        // Critical Section ---------------------------------------
+        private Interrupt interrupt;
+        public EInterrupt geteInterrupt(){return interrupt.getEInterrupt();}
+        public void seteInterrupt(Interrupt eInterrupt){this.interrupt = eInterrupt;}
+        // --------------------------------------------------------
+
+
+        public void handle(){
+            // loader, timer, io, process가 인터럽트를 발생시킨다.
+            switch (this.interrupt.getEInterrupt()) {
+                case eProcessStarted -> // enqueue를
+                    // TODO: 어떤 프로세스가 시작되었는지 파라미터로 줘야함.
+                        handleProcessStart(this.interrupt.getProcess());
+                case eProcessTerminated -> {
+                    // TODO: 어떤 프로세스가 종료되었는지 파라미터로 줘야함.
+                    handleProcessTerminated();
+                    runningProcess = getReadyQueue().dequeue();
+                }
+                case eIOStarted -> {
+                    getWaitQueue().enqueue(runningProcess);
+                    runningProcess = getReadyQueue().dequeue();
+                }
+                case eIOTerminated -> handleIOTerminate(this.interrupt.getProcess());
+                case eTimeout -> {
+                    getReadyQueue().enqueue(runningProcess);
+                    runningProcess = getReadyQueue().dequeue();
+                }
+                default -> {
+                }
             }
+        }
+        // Queue가 비어있을 때 아무짓도 안할 때의 초기 프로세스를 가져오는 역할
+        private void handleProcessStart(Process process){
+            getReadyQueue().enqueue(process);
         }
 
-        public Process dequeue(){
-            Process process = null;
-            if(this.currentSize > 0) {
-                process = this.get(this.head);
-//            this.set(this.head, null); // 없어도 될듯
-                this.head = (this.head + 1) % this.maxSize;
-                this.currentSize--;
-            }
-            return process;
+        private void handleProcessTerminated(){
         }
+
+        private void handleIOTerminate(Process process){
+            getReadyQueue().enqueue(process);
+        }
+
     }
+
+
 }
-q

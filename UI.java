@@ -12,9 +12,9 @@ public class UI {
         while(command.compareTo("q") != 0){
             if(command.compareTo("r") == 0){
                 String fileName = sc.next();
-                loader.load(fileName);
+                Process process =  loader.load(fileName);
+                scheduler.getReadyQueue().enqueue(process);
             }
-            scheduler.run();
             command = sc.next();
         }
 
