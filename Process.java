@@ -1,3 +1,4 @@
+import java.lang.instrument.Instrumentation;
 import java.util.Scanner;
 import java.util.Vector;
 
@@ -26,6 +27,35 @@ public class Process {
 //            .end
 
 
+    private class Instruction{
+        String command;
+
+        public String getCommand(){return command;}
+        public void setCommand(String command){this.command = command;}
+        public String getOperand1(){return operand1;}
+        public void setOperand1(String operand1){this.operand1 = operand1;}
+        public String getOperand2(){return operand2;}
+        public void setOperand2(String operand2){this.operand2 = operand2;}
+
+        String operand1;
+        String operand2;
+        public Instruction(String command, String operand1, String operand2){
+            this.command = command;
+            this.operand1 = operand1;
+            this.operand2 = operand2;
+        }
+
+        public Instruction(String line){
+            String[] tokens = line.split(" ");
+            this.command = tokens[0];
+            if(tokens.length > 1)this.operand1 = tokens[1];
+            if(tokens.length > 2)this.operand2 = tokens[2];
+        }
+
+        public String toString(){
+            return command + " " + operand1 + " " + operand2;
+        }
+    }
 
 
     // Variables
@@ -34,7 +64,7 @@ public class Process {
     private int codeSize;
     private int heapSize;
     private int dataSize;
-    private Vector<String > codeList;
+    private Vector<Instruction> codeList;
 
 
     // Getter & Setter
@@ -49,14 +79,14 @@ public class Process {
     public void setHeapSize(int heapSize){this.heapSize = heapSize;}
     public int getDataSize(){return dataSize;}
     public void setDataSize(int dataSize){this.dataSize = dataSize;}
-    public Vector<String> getCodeList(){return codeList;}
-    public void setCodeList(Vector<String> codeList){this.codeList = codeList;}
+    public Vector<Instruction> getCodeList(){return codeList;}
+    public void setCodeList(Vector<Instruction> codeList){this.codeList = codeList;}
 
 
 
     // Constructor
     public Process () {
-        this.codeList = new Vector<String>();
+        this.codeList = new Vector<>();
 
     }
 
@@ -65,7 +95,8 @@ public class Process {
         String line = sc.nextLine();
         while(line.compareTo("halt") != 0){
 //            parse(sc);
-            this.codeList.add(line);
+            Instruction instruction = new Instruction(line);
+            this.codeList.add(instruction);
             line = sc.nextLine();
             System.out.println(line);
         }
@@ -120,12 +151,9 @@ public class Process {
     }
 
     public boolean executeInstruction(){
-        String instruction = this.codeList.get(this.getPC());
+        Instruction instruction = this.codeList.get(this.getPC());
         System.out.println(instruction);
         this.setPC(this.getPC()+1);
-        if(instruction.compareTo("halt")!=0){
-            return false;
-        }
-        return true;
+        return instruction.getCommand().compareTo("halt") == 0;
     }
 }
