@@ -1,33 +1,8 @@
 public class InterruptHandler {
     // Interrupt는 종류가 다양해질수있기 때문에 객체로 만들어야 확장성이 좋다.
 
-    public enum EInterrupt { // OS Interrupt
-        eTimeout,
-        eIOStarted,
-        eIOTerminated,
-        eProcessTerminated,
-        eProcessStarted,
-    }
 
     private final Scheduler scheduler;
-
-    class Interrupt {
-        private EInterrupt eInterrupt;
-        private Process process;
-
-        public Interrupt(EInterrupt eInterrupt, Process process){
-            this.eInterrupt = eInterrupt;
-            this.process = process;
-        }
-
-        public EInterrupt getEInterrupt(){
-            return eInterrupt;
-        }
-
-        public Process getProcess(){
-            return process;
-        }
-    }
 
     // Critical Section ---------------------------------------
     private Queue<Interrupt> interruptQ;
@@ -41,7 +16,7 @@ public class InterruptHandler {
     // --------------------------------------------------------
 
     // Constructor
-    public InterruptHandler(Scheduler scheduler){
+    public InterruptHandler(){
         this.interruptQ = new Queue<Interrupt>();
         this.scheduler = scheduler;
     }
