@@ -15,7 +15,7 @@ public class Queue<T> extends Vector<T> {
         this.tail = 0;
 
         this.emptySemaphoreReady = new Semaphore(MAX_NUM_PROCESS,true);
-        this.fullSemaphoreReady = new Semaphore(MAX_NUM_PROCESS, true)
+        this.fullSemaphoreReady = new Semaphore(MAX_NUM_PROCESS, true);
         this.emptySemaphoreReady.acquire(MAX_NUM_PROCESS);
 
         for(int i=0;i<maxSize;i++){

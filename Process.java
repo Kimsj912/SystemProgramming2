@@ -1,4 +1,6 @@
 import java.lang.instrument.Instrumentation;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Vector;
 
@@ -28,7 +30,11 @@ public class Process {
 
 
     private class Instruction{
-        String command;
+
+        private String command;
+        String operand1;
+        String operand2;
+
 
         public String getCommand(){return command;}
         public void setCommand(String command){this.command = command;}
@@ -37,8 +43,6 @@ public class Process {
         public String getOperand2(){return operand2;}
         public void setOperand2(String operand2){this.operand2 = operand2;}
 
-        String operand1;
-        String operand2;
         public Instruction(String command, String operand1, String operand2){
             this.command = command;
             this.operand1 = operand1;
@@ -46,8 +50,11 @@ public class Process {
         }
 
         public Instruction(String line){
+            // 컴파일러에선 단어 하나를 토큰이라고 한다.
             String[] tokens = line.split(" ");
             this.command = tokens[0];
+            this.operand1 = ""; // 초기화 해야함.
+            this.operand2 = ""; // 초기화 해야함.
             if(tokens.length > 1)this.operand1 = tokens[1];
             if(tokens.length > 2)this.operand2 = tokens[2];
         }
@@ -59,16 +66,25 @@ public class Process {
 
 
     // Variables
+    // about CPU
+    private static final int MAX_REGISTERS = 10;
+    private Vector<Integer> registers;
     private int PC;
     private int stackSize;
     private int codeSize;
     private int heapSize;
     private int dataSize;
-    private Vector<Instruction> codeList;
 
+    // about Memory
+    private Vector<Instruction> codeList;
+    private Vector<Integer> dataSegment;
+    private Vector<Integer> heapSegment;
+    private Vector<Integer> stackSegment;
+
+    // aboutParser
+    private Map<String, String> labelMap;
 
     // Getter & Setter
-
     public int getPC(){return PC;}
     public void setPC(int PC){this.PC = PC;}
     public int getStackSize(){return stackSize;}
@@ -86,21 +102,46 @@ public class Process {
 
     // Constructor
     public Process () {
+        for(int i = 0; i<MAX_REGISTERS; i++){
+            this.registers.add(i);
+        }
         this.codeList = new Vector<>();
+        this.dataSegment = new Vector<>();
+        this.heapSegment = new Vector<>();
+        this.stackSegment = new Vector<>();
+
+        this.labelMap = new HashMap<>();
 
     }
 
 
     public void parseCode(Scanner sc){
-        String line = sc.nextLine();
-        while(line.compareTo("halt") != 0){
-//            parse(sc);
-            Instruction instruction = new Instruction(line);
-            this.codeList.add(instruction);
-            line = sc.nextLine();
-            System.out.println(line);
-        }
+        // 컴파일러가 파일을 읽을 땐 심볼읽는거 한번, 전체로 한번읽음.
+        this.parsePhaseI(sc);
+        this.parsePhaseII(sc);
+    }
 
+    private void parsePhaseII(Scanner sc){
+        for(Instruction instruction : this.codeList){
+            if(instruction.getCommand().compareTo("jump")==0 || instruction.getCommand().compareTo("greaterThanEqual")==0){
+                instruction.setOperand1(this.labelMap.get(instruction.getOperand1()));
+            }
+        }
+    }
+
+    private void parsePhaseI(Scanner sc){
+        String line = sc.nextLine();
+        while(sc.hasNext()){
+            Instruction instruction = new Instruction(line);
+            if(instruction.getCommand().compareTo("label") == 0){
+                this.labelMap.put(instruction.getOperand1(), String.valueOf(this.codeList.size()));
+            }else if(instruction.getCommand().compareTo("//") == 0){
+            }else if(instruction.getCommand().compareTo("") == 0) {
+            } else{
+                this.codeList.add(instruction);
+            }
+            line = sc.nextLine();
+        }
     }
 
     public void parse(Scanner scanner){
@@ -116,22 +157,6 @@ public class Process {
             }
         }
     }
-//    private void loadCodeSegment(Scanner sc){
-//        String token;
-//        while((token = sc.nextLine()).compareTo(".code") != 0) {
-//            String[] tokens = token.split(" ");
-//            if (tokens[0].compareTo("codeSize") == 0) {
-//                this.codeSize = Integer.parseInt(tokens[1]);
-//            } else if (tokens[0].compareTo(".dataSize") == 0) {
-//                this.dataSize = Integer.parseInt(tokens[1]);
-//            } else if (tokens[0].compareTo(".heapSize") == 0) {
-//                this.heapSize = Integer.parseInt(tokens[1]);
-//            } else if (tokens[0].compareTo(".stackSize") == 0) {
-//                this.stackSize = Integer.parseInt(tokens[1]);
-//            }
-//        }
-//
-//    }
 
     private void parseData(Scanner sc){ // 실제론 PCB에 들어가야하는 함수임.
         String command;
@@ -142,18 +167,32 @@ public class Process {
                 this.codeSize = size;
             } else if(command.compareTo("dataSize") == 0){
                 this.dataSize = size;
+                for(int i=0;i<dataSize;i++){
+                    this.dataSegment.add(i);
+                }
             } else if(command.compareTo("heapSize") == 0){
                 this.heapSize = size;
+                for(int i=0;i<heapSize;i++){
+                    this.heapSegment.add(i);
+                }
             } else if(command.compareTo("stackSize") == 0){
                 this.stackSize = size;
+                for(int i=0;i<stackSize;i++){
+                    this.stackSegment.add(i);
+                }
             }
         }
     }
 
-    public boolean executeInstruction(){
+    public boolean executeInstruction(InterruptHandler interruptHandler){
         Instruction instruction = this.codeList.get(this.getPC());
         System.out.println(instruction);
         this.setPC(this.getPC()+1);
-        return instruction.getCommand().compareTo("halt") == 0;
+        if(instruction.getCommand().compareTo("halt") == 0){
+            Interrupt interrupt = new Interrupt(Interrupt.EInterrupt.eProcessTerminated, this);
+            this.getInterruptQueue.enqueue(interrupt);
+
+            return false;
+        }return true;
     }
 }
