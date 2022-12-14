@@ -1,10 +1,10 @@
 import java.util.Scanner;
 
 public class UI  extends Thread{
-    private final Scheduler scheduler;
+    private Queue<Process> readyQueue;
 
-    public UI (Scheduler scheduler){
-        this.scheduler = scheduler;
+    public UI (Queue<Process> readyQueue){
+        this.readyQueue = readyQueue;
     }
     public void run() { // Thread는 run이라는 함수를 무조건 실행시킨다.
         Loader loader = new Loader();
@@ -17,7 +17,7 @@ public class UI  extends Thread{
             if(command.compareTo("r") == 0){
                 String fileName = sc.next();
                 Process process =  loader.load(fileName);
-                scheduler.enReadyQueue(process); // Critical Section을 UI에 만들게 한다.
+                readyQueue.enReadyQueue(process); // Critical Section을 UI에 만들게 한다.
             }
             command = sc.next();
         }
